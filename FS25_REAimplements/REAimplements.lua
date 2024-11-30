@@ -1,9 +1,9 @@
 ﻿--
 -- REA Script
 -- author: 900Hasse
--- date: 23.11.2022
+-- date: 30.11.2024
 --
--- V1.0.2.0
+-- V1.0.3.0
 --
 -----------------------------------------
 -- TO DO
@@ -236,9 +236,9 @@ function REAimplements:update(dt)
 		-- Add REA functionality
 		-----------------------------------------------------------------------------------
 		-- If vehicles present run code
-		if g_currentMission.vehicles ~= nil then
+		if g_currentMission.VehicleSystem.vehicles ~= nil then
 			-- Run code for vehicles
-			for _,vehicle in pairs(g_currentMission.vehicles) do
+			for _,vehicle in pairs(g_currentMission.vehicleSystem.vehicles) do
 				-- Check if the vehicle is active for wheel effects
 				if REAimplements:GetIsActive(vehicle,dt) then
 				-- If vehicle is motorized adjust pto power need
@@ -1142,7 +1142,7 @@ end
 -- Function to get number of groundtype nodes to use
 -----------------------------------------------------------------------------------
 function REAimplements:GetNumberOfGroundTypeNodes(TotalDistance,DistanceEachNode,MinNumberNodes,MaxNumberNodes)
-	local NumberOfNodes = MathUtil.clamp(REAimplements:RoundValue(TotalDistance / DistanceEachNode), MinNumberNodes, MaxNumberNodes);
+	local NumberOfNodes = math.clamp(REAimplements:RoundValue(TotalDistance / DistanceEachNode), MinNumberNodes, MaxNumberNodes);
 	local DistanceBetweeneEachNode = TotalDistance / NumberOfNodes;
 	return NumberOfNodes,DistanceBetweeneEachNode;
 end
