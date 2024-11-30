@@ -3,7 +3,7 @@
 -- author: 900Hasse
 -- date: 23.11.2022
 --
--- V1.0.1.0
+-- V1.0.2.0
 --
 -----------------------------------------
 -- TO DO
@@ -220,7 +220,7 @@ function REAimplements:update(dt)
 			-- Power needed for balers and foragewagons to fill 100l/s for filltype with a mass of 1 ton/m2
 			REAimplements.FillspeedPowerNeed = {};
 			REAimplements.FillspeedPowerNeed[REAimplements.Combine] = 650;
-			REAimplements.FillspeedPowerNeed[REAimplements.CombineRootcrops] = 300;
+			REAimplements.FillspeedPowerNeed[REAimplements.CombineRootcrops] = 150;
 			REAimplements.FillspeedPowerNeed[REAimplements.ForageWagon] = 500;
 			REAimplements.FillspeedPowerNeed[REAimplements.Baler] = 450;
 			REAimplements:PrintDebug("Harvesters " .. REAimplements.FillspeedPowerNeed[REAimplements.Combine] .. "hp");
@@ -235,41 +235,64 @@ function REAimplements:update(dt)
 		-----------------------------------------------------------------------------------
 		-- Add REA functionality
 		-----------------------------------------------------------------------------------
-		-- Get number of vehicles
-		local numVehicles = table.getn(g_currentMission.vehicles);
 		-- If vehicles present run code
-		if numVehicles ~= nil then
+		if g_currentMission.vehicles ~= nil then
 			-- Run code for vehicles
-			if numVehicles >= 1 then
-				for VehicleIndex=1, numVehicles do
-					-- Save "vehicle" to local
-					local vehicle = g_currentMission.vehicles[VehicleIndex];			
-					-- Check if current vehicle exists
-					if vehicle ~= nil then
-						-- If vehicle is motorized save speed to use for shifting gear
-						if vehicle.spec_motorized ~= nil then
-							if vehicle.spec_motorized.motor ~= nil then
-								-- Adjust speed of vehicle if PTO demands more power than motor can deliver
-								if vehicle.spec_motorized.isMotorStarted then
-									-- Adjust speed if PTO tourqe reaches high levels
-									REAimplements:AdjustSpeedIfPtpPowerMaxed(vehicle,dt);
-								end;
+			for _,vehicle in pairs(g_currentMission.vehicles) do
+				-- Check if the vehicle is active for wheel effects
+				if REAimplements:GetIsActive(vehicle,dt) then
+				-- If vehicle is motorized adjust pto power need
+					if vehicle.spec_motorized ~= nil then
+						if vehicle.spec_motorized.motor ~= nil then
+							-- Adjust speed of vehicle if PTO demands more power than motor can deliver
+							if vehicle.spec_motorized.isMotorStarted then
+								-- Adjust speed if PTO tourqe reaches high levels
+								REAimplements:AdjustSpeedIfPtpPowerMaxed(vehicle,dt);
 							end;
 						end;
-						-- Set tooltype
-						if vehicle.ToolType == nil then
-							REAimplements:SetToolType(vehicle);
-						end;
-						-- Tooltype found
-						if vehicle.ToolType ~= REAimplements.NoTool then
-							-- Adjust power need and speed of power consuming vehicle
-							REAimplements:UpdatePowerMultiplier(vehicle,dt);
-						end;
+					end;
+					-- Set tooltype
+					if vehicle.ToolType == nil then
+						REAimplements:SetToolType(vehicle);
+					end;
+					-- Tooltype found
+					if vehicle.ToolType ~= REAimplements.NoTool then
+						-- Adjust power need and speed of power consuming vehicle
+						REAimplements:UpdatePowerMultiplier(vehicle,dt);
 					end;
 				end;
 			end;
 		end;
 	end;
+end;
+
+
+--------------------------------------------------------------------
+-- Function to get if vehicle should be activate
+--------------------------------------------------------------------
+function REAimplements:GetIsActive(vehicle,dt)
+	if vehicle.REAimplementsKeepActive == nil then
+		vehicle.REAimplementsKeepActive = false;
+		vehicle.REAimplementsKeepActiveTime = 1000;
+	end;
+	-- Check if vehicle is active or moving
+	local MinSpeedToActivate = 0.5
+	local VehicleActive = vehicle:getIsActive() or vehicle.lastSpeed * 3600 > MinSpeedToActivate;
+	-- Keep vehicle alive after active state for some time
+	if VehicleActive then
+		vehicle.REAimplementsKeepActive = true;
+		vehicle.REAimplementsKeepActiveTime = 1000;
+	end;
+	-- Keep active for some time
+	if vehicle.REAimplementsKeepActive and not VehicleActive then
+		-- Count down
+		vehicle.REAimplementsKeepActiveTime = vehicle.REAimplementsKeepActiveTime - dt;
+		if vehicle.REAimplementsKeepActiveTime < 0 then
+			vehicle.REAimplementsKeepActive = false;
+		end;
+	end;
+	-- Return if the vehicle is active
+	return vehicle.REAimplementsKeepActive;
 end;
 
 
@@ -1406,3 +1429,4 @@ if REAimplements.ModActivated == nil then
 
 
 end;
+

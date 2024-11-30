@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="63">
+<modDesc descVersion="72">
     <author>900Hasse</author>
-	<version>1.0.1.0</version>
+	<version>1.0.2.0</version>
 	<title>
         <en>REA22 Implements</en>
     </title>
@@ -29,6 +29,10 @@ The force applied to pulled tools is now applied on the correct place.
 1.0.1.0
 - Harvesters for sugerbeets and potatos no longer get to much power applied.
 - If width of implement was changed groundstate node could cause errors, this is fixed.
+
+1.0.2.0
+- Improved performace.
+- Decreased power applied to harvesters for sugerbeets and potatos.
 ]]>
 </en>
 <de>
@@ -54,6 +58,10 @@ Die auf gezogene Werkzeuge aufgebrachte Kraft wird nun an der richtigen Stelle a
 1.0.1.0
 - Erntemaschinen für Zuckerrüben und Kartoffeln bekommen nicht mehr zu viel Kraft zugeführt.
 - Wenn die Breite des Anbaugeräts geändert wurde, konnte der Grundzustandsknoten Fehler verursachen, dies wurde behoben.
+
+1.0.2.0
+- Verbesserte Leistung.
+- Verringerte Leistung für Erntemaschinen für Zuckerrüben und Kartoffeln.
 ]]>
 </de>
     </description>
