@@ -1,23 +1,23 @@
 ﻿--
 -- REA Script
--- author: 900Hasse
--- date: 30.11.2024
+-- author: 900Hasse, edited by keklient
+-- date: 04.12.2024
 --
 -- V1.0.3.0
 --
 -----------------------------------------
 -- TO DO
 ---------------
--- 
--- 
+--
+--
 
 
 
 -----------------------------------------
 -- KNOWN ISSUES
 ---------------
--- 
--- 
+--
+--
 
 print("---------------------------")
 print("----- REA by 900Hasse -----")
@@ -236,7 +236,7 @@ function REAimplements:update(dt)
 		-- Add REA functionality
 		-----------------------------------------------------------------------------------
 		-- If vehicles present run code
-		if g_currentMission.VehicleSystem.vehicles ~= nil then
+		if g_currentMission.vehicleSystem.vehicles ~= nil then
 			-- Run code for vehicles
 			for _,vehicle in pairs(g_currentMission.vehicleSystem.vehicles) do
 				-- Check if the vehicle is active for wheel effects
@@ -358,7 +358,7 @@ function REAimplements:SetToolType(vehicle)
 			vehicle.ToolType = REAimplements.Combine;
 			if vehicle.spec_fillUnit ~= nil then
 				for _, FillUnit in pairs(vehicle.spec_fillUnit.fillUnits) do
-					if FillUnit.fillType == FillType.SUGARBEET or FillUnit.fillType == FillType.POTATO then 
+					if FillUnit.fillType == FillType.SUGARBEET or FillUnit.fillType == FillType.POTATO then
 						vehicle.ToolType = REAimplements.CombineRootcrops;
 						break;
 					end;
@@ -617,7 +617,7 @@ end;
 function REAimplements:CreateForcePositions(Vehicle,ToolType,PowerConsumer,WorkAreas)
 	-- Create force position table
 	PowerConsumer.ForcePosition = {};
-	local ParentNode = PowerConsumer.forceNode; 
+	local ParentNode = PowerConsumer.forceNode;
 	-- Create Force nodes
 	if ToolType == REAimplements.Plow then		
 		local numWorkArea = table.getn(WorkAreas);
@@ -626,7 +626,7 @@ function REAimplements:CreateForcePositions(Vehicle,ToolType,PowerConsumer,WorkA
 			local HasTwoPlowareas = WorkAreas[2].type == WorkAreaType.PLOW;
 			if HasTwoPlowareas then
 				if Vehicle.spec_wheels ~= nil then
-					if Vehicle.spec_wheels.wheels ~= nil then 
+					if Vehicle.spec_wheels.wheels ~= nil then
 						if table.getn(Vehicle.spec_wheels.wheels) > 1 then
 							local LargestRadius = 0;
 							local ActWheel;
@@ -805,7 +805,7 @@ function REAimplements:CalcSpeedAndDirection(LastSpeedSigned,MovedDistance,dt)
 	local Speed = SpeedSignedSmoothe;
 	-- Remove sign
 	if Speed < 0 then
-		Speed = Speed*(-1); 
+		Speed = Speed*(-1);
 	end;
 	-- Moving direction
 	local MovingDirection = 0;
@@ -834,7 +834,7 @@ function REAimplements:UpdatePowerFillspeed(vehicle,dt)
 	-- Save local copy of FillUnit
 	local FillUnit = vehicle.spec_fillUnit;
 	-- Get number of fillunits
-	local numFillUnits = table.getn(FillUnit.fillUnits);
+	local numFillUnits = table.getn(FillUnit:getFillUnits());
 	-- Total fill level for all fillunits
 	local TotalFillLevel = 0;
 	-- Highest fillspeed
@@ -855,14 +855,19 @@ function REAimplements:UpdatePowerFillspeed(vehicle,dt)
 	end;
 	-- Search for correct fill unit and get current filllevel
 	for FillUnitIndex=1, numFillUnits do
-		local ActFillUnit = FillUnit.fillUnits[FillUnitIndex];
+		local ActFillUnit = FillUnit:getFillUnitByIndex(FillUnitIndex);
 		if ActFillUnit.fillType ~= FillType.DIESEL and ActFillUnit.fillType ~= FillType.DEF then
 			-- Calculate total fill speed
 			TotalFillLevel = TotalFillLevel + ActFillUnit.fillLevel;
 			-- Get mass of filltype from the fillunit with highest fillspeed, Ton/m2
 			if ActFillUnit.fillLevel > HighestFillLevel then
 				HighestFillLevel = ActFillUnit.fillLevel;
-				HighestFillLevelMassTM2 = g_currentMission.fillTypeManager.fillTypes[ActFillUnit.fillType].massPerLiter * 1000;
+				if g_fillTypeManager ~= nil and ActFillUnit.fillType ~= nil then
+                    local fillType = g_fillTypeManager:getFillTypeByIndex(ActFillUnit.fillType)
+                    if fillType ~= nil then
+                        HighestFillLevelMassTM2 = fillType.massPerLiter * 1000
+                    end;
+                end;
 			end;
 		end;
 	end;
