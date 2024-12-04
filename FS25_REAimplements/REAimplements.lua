@@ -1,15 +1,15 @@
 ﻿--
 -- REA Script
--- author: 900Hasse, edited by keklient
+-- author: 900Hasse
 -- date: 04.12.2024
 --
--- V1.0.3.0
+-- V1.0.3.1
 --
 -----------------------------------------
 -- TO DO
 ---------------
---
---
+-- Combine min powerneed
+-- slow combines down more
 
 
 
@@ -930,6 +930,7 @@ function REAimplements:UpdatePowerFillspeed(vehicle,dt)
 		end;
 		-- Add power to PTO if vehicle is working
 		if vehicle:doCheckSpeedLimit() or (vehicle.ToolType == REAimplements.Combine and CutterWorking) then
+			
 			local PowerToAddPTO = 0;
 			-- If fillspeed present add power
 			local MinPowerToAdd = 0.001;
@@ -945,8 +946,10 @@ function REAimplements:UpdatePowerFillspeed(vehicle,dt)
 			PowerConsumer.PowerToAddPTOSmoothed = math.max(MinPowerToAdd,REAimplements:SmootheValue(PowerConsumer.PowerToAddPTOSmoothed,PowerToAddPTO));
 			-- Add power need
 			if PowerConsumer.PowerToAddPTOSmoothed > MinPowerToAdd then
+				-- commented out for now to avoid some combines not working at all
+				-- TODO: rework, add more impact and add check for min powerneed
 				if PowerConsumer.neededMinPtoPower ~= nil then
-					PowerConsumer.neededMinPtoPower = PowerNeedMachineMin + PowerConsumer.PowerToAddPTOSmoothed;
+					-- PowerConsumer.neededMinPtoPower = PowerNeedMachineMin + PowerConsumer.PowerToAddPTOSmoothed;
 				end;
 				if PowerConsumer.neededMaxPtoPower ~= nil then
 					PowerConsumer.neededMaxPtoPower = PowerNeedMachineMax + PowerConsumer.PowerToAddPTOSmoothed;
