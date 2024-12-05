@@ -891,6 +891,7 @@ function REAimplements:UpdatePowerFillspeed(vehicle,dt)
 		end;
 		FillUnit.TimeLastChange = 0;
 		FillUnit.AddedFillLevel = 0;
+	end;
 	-- Smoothe fillspeed value
 	FillUnit.FillSpeedLSSmoothed = REAimplements:SmootheValue(FillUnit.FillSpeedLSSmoothed,FillUnit.FillSpeedLS);
 	if FillUnit.FillSpeedLSSmoothed < 0.001 then
