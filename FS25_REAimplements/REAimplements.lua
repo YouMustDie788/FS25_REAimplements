@@ -1,15 +1,15 @@
 ﻿--
 -- REA Script
--- author: 900Hasse
+-- author: 900Hasse, edited by Keklient
 -- date: 04.12.2024
 --
--- V1.0.3.1
+-- V0.1.0.0
 --
 -----------------------------------------
 -- TO DO
 ---------------
--- Combine min powerneed
--- slow combines down more
+-- test value for fillspeed cap or find a better solution
+--
 
 
 
@@ -831,6 +831,9 @@ end
 -- Function to updater power for fillspeed implements
 -----------------------------------------------------------------------------------
 function REAimplements:UpdatePowerFillspeed(vehicle,dt)
+	-- static cap to fill speed to avoid crazy values on initial fill, may need adjustment
+	-- TODO: determine good value
+	local FillSpeedLSCap = 1000;
 	-- Save local copy of FillUnit
 	local FillUnit = vehicle.spec_fillUnit;
 	-- Get number of fillunits
@@ -848,6 +851,7 @@ function REAimplements:UpdatePowerFillspeed(vehicle,dt)
 		FillUnit.AddedFillLevel = 0;
 		FillUnit.FillSpeedLS = 0;
 		FillUnit.FillSpeedLSSmoothed = 0;
+
 	end;
 	-- Add time change since last fill, max 1 second
 	if FillUnit.TimeLastChange < 1000 then
@@ -872,6 +876,7 @@ function REAimplements:UpdatePowerFillspeed(vehicle,dt)
 		end;
 	end;
 	-- Calculate change in fill level
+
 	FillUnit.AddedFillLevel = TotalFillLevel - FillUnit.LastTotalFillLevel;
 	-- Save fill level
 	FillUnit.LastTotalFillLevel = TotalFillLevel;
@@ -880,9 +885,12 @@ function REAimplements:UpdatePowerFillspeed(vehicle,dt)
 	if FillUnit.AddedFillLevel > 0 then
 		-- Calculate fillspeed Liter / second
 		FillUnit.FillSpeedLS = FillUnit.AddedFillLevel / (FillUnit.TimeLastChange / 1000);
+		-- Cap the fillspeed to avoid crazy values
+		if FillUnit.FillSpeedLS > FillSpeedLSCap then
+			FillUnit.FillSpeedLS = FillSpeedLSCap;
+		end;
 		FillUnit.TimeLastChange = 0;
 		FillUnit.AddedFillLevel = 0;
-	end;
 	-- Smoothe fillspeed value
 	FillUnit.FillSpeedLSSmoothed = REAimplements:SmootheValue(FillUnit.FillSpeedLSSmoothed,FillUnit.FillSpeedLS);
 	if FillUnit.FillSpeedLSSmoothed < 0.001 then
@@ -946,10 +954,8 @@ function REAimplements:UpdatePowerFillspeed(vehicle,dt)
 			PowerConsumer.PowerToAddPTOSmoothed = math.max(MinPowerToAdd,REAimplements:SmootheValue(PowerConsumer.PowerToAddPTOSmoothed,PowerToAddPTO));
 			-- Add power need
 			if PowerConsumer.PowerToAddPTOSmoothed > MinPowerToAdd then
-				-- commented out for now to avoid some combines not working at all
-				-- TODO: rework, add more impact and add check for min powerneed
 				if PowerConsumer.neededMinPtoPower ~= nil then
-					-- PowerConsumer.neededMinPtoPower = PowerNeedMachineMin + PowerConsumer.PowerToAddPTOSmoothed;
+					PowerConsumer.neededMinPtoPower = PowerNeedMachineMin + PowerConsumer.PowerToAddPTOSmoothed;
 				end;
 				if PowerConsumer.neededMaxPtoPower ~= nil then
 					PowerConsumer.neededMaxPtoPower = PowerNeedMachineMax + PowerConsumer.PowerToAddPTOSmoothed;
